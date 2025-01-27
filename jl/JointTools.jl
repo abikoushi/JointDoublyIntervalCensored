@@ -146,7 +146,7 @@ end
 function vb(LE,RE,LS,RS, Tmax, maxit=1000, reltol=1e-8)
   ti = sort(unique([LE;RE;LS;RS;Tmax]))
   ti = ti[isfinite.(ti)]
-  n = size(LS,1)
+  #n = size(LS,1)
   le_rank = indexin(LE, ti)
   re_rank = indexin(RE, ti)
   ls_rank = indexin(LS, ti)
@@ -174,7 +174,7 @@ end
 function EM(LE,RE,LS,RS, Tmax, maxit=1000, reltol=1e-8)
   ti = sort(unique([LE;RE;LS;RS;Tmax]))
   ti = ti[isfinite.(ti)]
-  n = size(LS,1)
+  #n = size(LS,1)
   le_rank = indexin(LE, ti)
   re_rank = indexin(RE, ti)
   ls_rank = indexin(LS, ti)
@@ -291,7 +291,7 @@ function simulated_pvalue(Rs, estbreaks,  brks, tvalue)
 end
 
 function simulated_pvalue(Rs, tvalue)
-  pv = zero(tvalue)
+  #pv = zero(tvalue)
   ps = collect(range(0, stop=1, length = length(Rs)))
   sort!(Rs)
   fl = findlast(Rs .< tvalue)
