@@ -171,6 +171,34 @@ function vb(LE,RE,LS,RS, Tmax, maxit=1000, reltol=1e-8)
   return (value=ti, alpha=alpha, beta=beta, A=A, B=B, logprob=logprob)
 end
 
+function EM(LE,RE,LS,RS, Tmax, maxit=1000, reltol=1e-8)
+  ti = sort(unique([LE;RE;LS;RS;Tmax]))
+  ti = ti[isfinite.(ti)]
+  n = size(LS,1)
+  le_rank = indexin(LE, ti)
+  re_rank = indexin(RE, ti)
+  ls_rank = indexin(LS, ti)
+  rs_rank = indexin(RS, ti)
+  m = size(ti,1)
+  alpha = ones(m)
+  beta = ones(m)
+  A = UpperTriangular(zeros(m,m))
+  B = UpperTriangular(zeros(m,m))
+  logprob = zeros(maxit)
+  for i in 2:maxit
+    h = alpha / sum(alpha)
+    lam = beta / sum(beta)
+    Aup!(A,le_rank, re_rank, ls_rank, rs_rank, h, lam)
+    Bup!(B, le_rank, re_rank, ls_rank, rs_rank, h, lam)
+    logprob[i] = summingup!(alpha, beta, A, B, h, lam)
+    if abs((logprob[i]-logprob[i-1])/logprob[i-1])<reltol
+      logprob = logprob[2:i]
+      break
+    end
+  end
+  return (value=ti, alpha=alpha, beta=beta, A=A, B=B, logprob=logprob)
+end
+
 prob2ccdf(x) = reverse(cumsum(reverse(x)))
 
 colmarginal(x) = cumsum(vec(sum(x,dims=2)))
@@ -248,8 +276,6 @@ function empiricalcdf(p,v,x)
 end
 
 function simulated_pvalue(Rs, estbreaks,  brks, tvalue)
-  #CI = zeros(length(brks), 3)
-  #xv = zero(brks)
   pv = zero(brks)
   for i in eachindex(brks)
     ps = collect(range(0, stop=1, length = size(Rs, 1)))
@@ -260,9 +286,6 @@ function simulated_pvalue(Rs, estbreaks,  brks, tvalue)
     fu = findfirst(tvalue[i] .< reverse(rs))
     upper = isnothing(fu) ? 0.0 : reverse(ps)[fu]
     pv[i] = min(lower, upper)
-    #xv[i] = estbreaks[ind]
-    #ci = quantile(rs,  [pv[i], 1-pv[i], 0.5])
-    #CI[i,:] = ci
   end
   return pv
 end
