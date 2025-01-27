@@ -247,4 +247,36 @@ function empiricalcdf(p,v,x)
   return out
 end
 
+function simulated_pvalue(Rs, estbreaks,  brks, tvalue)
+  #CI = zeros(length(brks), 3)
+  #xv = zero(brks)
+  pv = zero(brks)
+  for i in eachindex(brks)
+    ps = collect(range(0, stop=1, length = size(Rs, 1)))
+    ind = findfirst(estbreaks .>= brks[i])
+    rs = sort(Rs[:,ind])
+    fl = findlast(rs .< tvalue[i])
+    lower = isnothing(fl) ? 0.0 : ps[fl]
+    fu = findfirst(tvalue[i] .< reverse(rs))
+    upper = isnothing(fu) ? 0.0 : reverse(ps)[fu]
+    pv[i] = min(lower, upper)
+    #xv[i] = estbreaks[ind]
+    #ci = quantile(rs,  [pv[i], 1-pv[i], 0.5])
+    #CI[i,:] = ci
+  end
+  return pv
+end
+
+function simulated_pvalue(Rs, tvalue)
+  pv = zero(tvalue)
+  ps = collect(range(0, stop=1, length = length(Rs)))
+  sort!(Rs)
+  fl = findlast(Rs .< tvalue)
+  lower = isnothing(fl) ? 0.0 : ps[fl]
+  fu = findfirst(tvalue .< reverse(Rs))
+  upper = isnothing(fu) ? 0.0 : reverse(ps)[fu]
+  pv = min(lower, upper)
+  return pv
+end
+
 end
