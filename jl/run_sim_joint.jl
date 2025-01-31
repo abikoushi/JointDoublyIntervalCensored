@@ -32,9 +32,9 @@ tdist2 = MixtureModel([Weibull(2,5/gamma(1+1/2)), Weibull(0.5, 10)],[2/3,1/3])
 
 tdists = [tdist1, tdist2]
 
-mean.(tdists)
-std.(tdists)
-var.(tdists)
+# mean.(tdists)
+# std.(tdists)
+# var.(tdists)
 
 sigmas = [1,1.2,0.8]
 taus = [50,100,200]
@@ -73,31 +73,34 @@ function simfunc(iter, sigma, tau, WE, WS, tdist)
         bs = jointest.sampleB(LE, RE, LS, RS, tau, res[2], res[3], 5000)
         pv_B[iter] = jointest.simulated_pvalue(bs, trueB[1])
    end
-   return prop, pv_incubation, pv_intensity, pv_B
+   return prop, prop_em, pv_incubation, pv_intensity, pv_B
 end
 
 #test = simfunc(1, 1, 50, 2, 2, tdists[1])
-#test[4]
-#i,j,k = 1,2,1
-function kicksim()
-    WS = 2
-    out_pv_incubation = zeros(length(sigmas),length(taus),length(WEs),4)
-    out_pv_intensity  = zeros(length(sigmas),length(taus),length(WEs),4) 
-    out_pv_B = zeros(length(sigmas),length(taus),length(WEs),4)
-    out_prop = []
-    for i in eachindex(sigmas)
-        for j in eachindex(taus)
-            for k in eachindex(WEs)
-                prop, pv_incubation, pv_intensity, pv_B = simfunc(200, sigmas[i], taus[j], WEs[k], WS, tdist)
-                append!(outprop,prop)
-                out_pv_incubation[i,j,k,:] = pv_incubation
-                out_pv_intensity[i,j,k,:] = pv_intensity
-                out_pv_B[i,j,k] = pv_B
-                println(i,j,k)
-            end
+# kick simfunc
+WS = 2
+out_pv_incubation = zeros(length(sigmas),length(taus),length(WEs),4)
+out_pv_intensity  = zeros(length(sigmas),length(taus),length(WEs),4) 
+out_pv_B = zeros(length(sigmas),length(taus),length(WEs),4)
+out_vb = []
+out_em = []
+for i in eachindex(sigmas)
+    for j in eachindex(taus)
+        for k in eachindex(WEs)
+            prop, prop_em, pv_incubation, pv_intensity, pv_B = simfunc(200, sigmas[i], taus[j], WEs[k], WS, tdist)
+            append!(out_vb, prop)
+            append!(out_em, prop_em)
+            out_pv_incubation[i,j,k,:] = pv_incubation
+            out_pv_intensity[i,j,k,:] = pv_intensity
+            out_pv_B[i,j,k] = pv_B
+            println(i,j,k)
         end
     end
-    @save "outsim_trunc.jld" out_prop,out_pv_incubation,out_pv_intensity,out_pv_B
 end
+    
+@save "outsim_trunc_vb.jld" out_vb
+@save "outsim_trunc_em.jld" out_em
+@save "outsim_pv_incubation.jld" out_pv_incubation
+@save "outsim_pv_intensity.jld" out_pv_intensity
+@save "outsim_pv_B.jld" out_pv_B
 
-kicksim()
