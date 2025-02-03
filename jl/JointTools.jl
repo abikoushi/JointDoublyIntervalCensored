@@ -303,4 +303,8 @@ function simulated_pvalue(Rs, tvalue)
   return pv
 end
 
+function randfreqn(α, n)
+  return mapreduce(permutedims, vcat, [randfreq(α) for _ in 1:n])  
+end
+
 end
