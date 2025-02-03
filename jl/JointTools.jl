@@ -6,6 +6,7 @@ using Random
 using LogExpFunctions
 using SpecialFunctions
 using Statistics
+using SparseArrays
 
 function expmeanlog(x)
   sumx = sum(x)
@@ -64,7 +65,7 @@ end
 
 function aup(le_rank,re_rank,ls_rank,rs_rank,h,lam)
   m = size(lam,1)
-  a = UpperTriangular(zeros(m,m))
+  a = spzeros(m,m)
   for i in (le_rank):(re_rank)
     start = max(ls_rank,i+1)
     for j in start:rs_rank
@@ -87,7 +88,7 @@ end
 
 function bup(le_rank,re_rank,ls_rank,rs_rank,h,lam)
   m = size(lam,1)
-  B = UpperTriangular(zeros(m,m))
+  B = spzeros(m,m)
   rho = zeros(2)
   #convolution
   for i in le_rank:re_rank
@@ -154,8 +155,8 @@ function vb(LE,RE,LS,RS, Tmax, maxit=1000, reltol=1e-8)
   m = size(ti,1)
   alpha = ones(m)
   beta = ones(m)
-  A = UpperTriangular(zeros(m,m))
-  B = UpperTriangular(zeros(m,m))
+  A = spzeros(m,m)
+  B = spzeros(m,m)
   logprob = zeros(maxit)
   for i in 2:maxit
     h = expmeanlog(alpha)
@@ -182,8 +183,8 @@ function EM(LE,RE,LS,RS, Tmax, maxit=1000, reltol=1e-8)
   m = size(ti,1)
   alpha = ones(m)
   beta = ones(m)
-  A = UpperTriangular(zeros(m,m))
-  B = UpperTriangular(zeros(m,m))
+  A = spzeros(m,m)
+  B = spzeros(m,m)
   logprob = zeros(maxit)
   for i in 2:maxit
     h = alpha / sum(alpha)

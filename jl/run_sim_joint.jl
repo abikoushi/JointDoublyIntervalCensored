@@ -1,4 +1,3 @@
-
 #=
 Section 3 "Simulation Study"
 Fig 3 - 5 
@@ -61,7 +60,7 @@ function simfunc(iter, sigma, tau, WE, WS, tdist)
         LS = floor.(d[3][f])
         RS = ceil.(d[4][f])
         res = jointest.vb(LE, RE, LS, RS, tau)
-        res_em = jointest.vb(LE, RE, LS, RS, tau)
+        res_em = jointest.EM(LE, RE, LS, RS, tau)
         push!(prop, (res[1], jointest.prob2ccdf(res[2]/sum(res[2])), cumsum(res[3])))
         push!(prop, (res_em[1], jointest.prob2ccdf(res_em[2]/sum(res_em[2])), cumsum(res_em[3])))
         Rs = mapreduce(permutedims, vcat,[jointest.randfreq(res.alpha) for _ in 1:5000])
@@ -79,23 +78,25 @@ end
 #test = simfunc(1, 1, 50, 2, 2, tdists[1])
 # kick simfunc
 WS = 2
-out_pv_incubation = zeros(length(sigmas),length(taus),length(WEs),4)
-out_pv_intensity  = zeros(length(sigmas),length(taus),length(WEs),4) 
-out_pv_B = zeros(length(sigmas),length(taus),length(WEs),4)
+out_pv_incubation = zeros(length(tdists), length(sigmas), length(taus), length(WEs), 4, 200)
+out_pv_intensity  = zeros(length(tdists), length(sigmas), length(taus), length(WEs), 4, 200) 
+out_pv_B = zeros(length(tdists), length(sigmas), length(taus), length(WEs), 200)
 out_vb = []
 out_em = []
+for l in eachindex(tdists)
 for i in eachindex(sigmas)
     for j in eachindex(taus)
         for k in eachindex(WEs)
-            prop, prop_em, pv_incubation, pv_intensity, pv_B = simfunc(200, sigmas[i], taus[j], WEs[k], WS, tdist)
+            prop, prop_em, pv_incubation, pv_intensity, pv_B = simfunc(200, sigmas[i], taus[j], WEs[k], WS, tdists[l])
             append!(out_vb, prop)
             append!(out_em, prop_em)
-            out_pv_incubation[i,j,k,:] = pv_incubation
-            out_pv_intensity[i,j,k,:] = pv_intensity
-            out_pv_B[i,j,k] = pv_B
-            println(i,j,k)
+            out_pv_incubation[l, i,j,k,:,:] = pv_incubation
+            out_pv_intensity[l, i,j,k,:,:] = pv_intensity
+            out_pv_B[l, i,j, k, :] = pv_B
+            println(l,i,j,k)
         end
     end
+end 
 end
     
 @save "outsim_trunc_vb.jld" out_vb
