@@ -276,11 +276,11 @@ function empiricalcdf(p,v,x)
   return out
 end
 
-function simulated_pvalue(Rs, estbreaks,  brks, tvalue)
-  pv = zero(brks)
-  for i in eachindex(brks)
+function simulated_pvalue(Rs, breaks,  pos, tvalue)
+  pv = zero(pos)
+  for i in eachindex(pos)
     ps = collect(range(0, stop=1, length = size(Rs, 1)))
-    ind = findfirst(estbreaks .>= brks[i])
+    ind = findlast(breaks .< pos[i])
     rs = sort(Rs[:,ind])
     fl = findlast(rs .< tvalue[i])
     lower = isnothing(fl) ? 0.0 : ps[fl]
