@@ -2,7 +2,6 @@
 Section 3 "Simulation Study"
 Fig 3 - 5 
 =#
-
 using Random
 using LinearAlgebra
 using Distributions
@@ -18,9 +17,6 @@ using SparseArrays
 using QuadGK
 using CSV
 include("./JointTools.jl")
-
-
-
 
 Lambda(t, shape) = t^shape
 lambda(t, shape) = shape * (t^(shape-1.0))
@@ -44,14 +40,12 @@ tdists = [tdist1, tdist2]
 #end
 
 
-tdist = LogNormal(log(10)-0.5, 1)
-sigma = 1.2
-tau = 200
-WE = 2
-WS = 5
-
-
-
+# tdist = LogNormal(log(10)-0.5, 1)
+# sigma = 1.2
+# tau = 200
+# WE = 2
+# WS = 5
+#1233
 function simfunc(iter, sigma, tau, WE, WS, tdist)
     trueB = quadgk(x -> integrand(x, tdist, tau, sigma), 0.0, tau)
     prob = [0.5, 0.8, 0.9, 0.95] #4
@@ -67,6 +61,7 @@ function simfunc(iter, sigma, tau, WE, WS, tdist)
     prop = Vector{Any}(undef, iter)
     prop_em = Vector{Any}(undef, iter)
     for j in 1:iter
+        # println(j)
         d = jointest.makeDIC(MersenneTwister(j), tdist, tau, WE, WS, sigma)
         f = d[4] .<= tau
         LE = floor.(d[1][f])
@@ -98,9 +93,17 @@ function simfunc(iter, sigma, tau, WE, WS, tdist)
    return prop, prop_em, pv_inc_freq, pv_inc_prob, pv_intensity, pv_B
 end
 
-test = simfunc(2, 1, 50, 2, 2, tdists[1])
+#iter = 200
+#sigmas = [1,1.2,0.8]
+#taus = [50,100,200]
+#WE = 2
+#WSs = [2, 5, 10]
+#test = simfunc(iter, sigmas[3], taus[3], WE, WSs[3], tdists[1])
 
-# kick simfunc
+#size(test[3])
+#histogram(test[3][4,:])
+
+function kicksim()
 iter = 200
 sigmas = [1,1.2,0.8]
 taus = [50,100,200]
@@ -108,7 +111,8 @@ WE = 2
 WSs = [2, 5, 10]
 #prop, prop_em, pv_inc_freq, pv_inc_prob, pv_intensity, pv_B = simfunc(5, sigmas[1], taus[1], WEs[1], WS, tdists[1])
 
-out_pv_incubation = zeros(length(tdists), length(sigmas), length(taus), length(WSs), 4, iter)
+out_pv_incu_prob = zeros(length(tdists), length(sigmas), length(taus), length(WSs), 4, iter)
+out_pv_incu_freq = zeros(length(tdists), length(sigmas), length(taus), length(WSs), 4, iter)
 out_pv_intensity  = zeros(length(tdists), length(sigmas), length(taus), length(WSs), 4, iter) 
 out_pv_B = zeros(length(tdists), length(sigmas), length(taus), length(WSs), iter)
 
@@ -123,7 +127,8 @@ for i in eachindex(sigmas)
             prop, prop_em, pv_inc_prob, pv_inc_freq, pv_intensity, pv_B = simfunc(iter, sigmas[i], taus[j], WE, WSs[k], tdists[l])
             out_vb[counter] = prop
             out_em[counter] = prop_em
-            out_pv_incubation[l, i, j, k, :, :] = pv_incubation
+            out_pv_incu_freq[l, i, j, k, :, :] = pv_inc_freq
+            out_pv_incu_prob[l, i, j, k, :, :] = pv_inc_prob
             out_pv_intensity[l, i, j, k, :, :] = pv_intensity
             out_pv_B[l, i, j, k, :] = pv_B
             println(l,i,j,k)
@@ -132,13 +137,16 @@ for i in eachindex(sigmas)
     end
 end 
 end
-    
 
+out_vb = vcat(out_vb...)
+out_em = vcat(out_em...)
 
 CSV.write("outsim_trunc_vb.csv", out_vb)
 CSV.write("outsim_trunc_em.csv", out_em)
-
-@save "outsim_pv_incubation.jld" out_pv_incubation
+@save "outsim_pv_incubation_freq.jld" out_pv_incu_freq
+@save "outsim_pv_incubation_prob.jld" out_pv_incu_prob
 @save "outsim_pv_intensity.jld" out_pv_intensity
 @save "outsim_pv_B.jld" out_pv_B
+end
 
+@time kicksim()

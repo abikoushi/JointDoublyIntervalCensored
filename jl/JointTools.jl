@@ -278,15 +278,18 @@ end
 
 function simulated_pvalue(Rs, breaks,  pos, tvalue)
   pv = zero(pos)
+  ps = collect(range(0, stop=1, length = size(Rs, 1)))
   for i in eachindex(pos)
-    ps = collect(range(0, stop=1, length = size(Rs, 1)))
-    ind = findlast(breaks .< pos[i])
+    fi = breaks .< pos[i]
+    if any(fi)
+    ind = findlast(fi)
     rs = sort(Rs[:,ind])
     fl = findlast(rs .< tvalue[i])
     lower = isnothing(fl) ? 0.0 : ps[fl]
     fu = findfirst(tvalue[i] .< reverse(rs))
     upper = isnothing(fu) ? 0.0 : reverse(ps)[fu]
     pv[i] = min(lower, upper)
+    end
   end
   return pv
 end
