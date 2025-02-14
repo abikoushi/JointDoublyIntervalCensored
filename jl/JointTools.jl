@@ -1,4 +1,4 @@
-module jointest
+module jointtool
 
 using LinearAlgebra
 using Distributions
@@ -283,7 +283,8 @@ function simulated_pvalue(Rs, breaks, pos, tvalue)
     fi = breaks .< pos[i]
     if any(fi)
     ind = findlast(fi)
-    rs = sort(Rs[:,ind])
+    rs = Rs[:,ind]
+    sort!(rs)
     fl = findlast(rs .< tvalue[i])
     lower = isnothing(fl) ? 0.0 : ps[fl]
     fu = findfirst(tvalue[i] .< reverse(rs))
