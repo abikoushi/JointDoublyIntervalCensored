@@ -29,7 +29,7 @@ function integrand(x, d, tau, sigma)
 end
 
 tdist1 = LogNormal(log(10)-0.5, 1)
-tdist2 = MixtureModel([Weibull(2, 5/gamma(1+1/2)), Weibull(0.5, 10)],[2/3,1/3])
+tdist2 = MixtureModel([Weibull(2, 5/gamma(1+1/2)), Weibull(0.5, 10)], [2/3,1/3])
 tdists = [tdist1, tdist2]
 
 #plot(res.value, vec(mean(res.intensity[2001:end,:], dims=1)), legend=false)
@@ -48,7 +48,7 @@ tdists = [tdist1, tdist2]
 #end
 #plot(p)
 
-#function simfunc(iter, sigma, tau, WE, WS, tdist)
+function simfunc(iter, sigma, tau, WE, WS, tdist)
     trueB, _ = quadgk(x -> integrand(x, tdist, tau, sigma), 0.0, tau)
     prob = [0.5, 0.8, 0.9, 0.95] #4
     qs = quantile(tdist, prob)
@@ -63,8 +63,7 @@ tdists = [tdist1, tdist2]
     prop = Vector{Any}(undef, iter)
     prop_em = Vector{Any}(undef, iter)
     for j in 1:iter
-        # println(j)
-        d = jointest.makeDIC(MersenneTwister(j), tdist, tau, WE, WS, sigma)
+        d = jointtool.makeDIC(MersenneTwister(j), tdist, tau, WE, WS, sigma)
         f = d[4] .<= tau
         LE = floor.(d[1][f])
         RE = ceil.(d[2][f])
@@ -77,24 +76,27 @@ tdists = [tdist1, tdist2]
 
         res = jointest.gibbssampler(LE, RE, LS, RS, tau, 4000)
         Shat = vec(mean(res.ccdf[2001:end,:], dims=1))
-        df = DataFrame(value = res.value, ccdf = Shat, intensity = cumsum(res[3]), id = j, dist = string(nameof(typeof(tdist))),  sigma=sigma, tau=tau, WE=WE, WS=WS)
+        Lhat = vec(mean(res.intensity[2001:end,:], dims=1))
+        df = DataFrame(value = res.value, ccdf = Shat, intensity = Lhat, id = j, dist = string(nameof(typeof(tdist))),  sigma=sigma, tau=tau, WE=WE, WS=WS)
         prop[j] = df
 
-        pv_inc_prob[:,j] = jointtol.simulated_pvalue(res.ccdf[2001:end,:], res.value, qs, tvalue)
+        pv_inc_prob[:,j] = jointtool.simulated_pvalue(res.ccdf[2001:end,:], res.value, qs, tvalue)
         pv_intensity[:,j] = jointtool.simulated_pvalue(res.intensity[2001:end,:], res.value, qs_intensity, tvalue_intensity)
-        pv_B[j] = jointtool.simulated_pvalue(res.b[2001:end,:], trueB)
+        pv_B[j] = jointtool.simulated_pvalue(res.b[2001:end], trueB)
    end
    prop = vcat(prop...)
    prop_em = vcat(prop_em...)
    return prop, prop_em, pv_inc_prob, pv_intensity, pv_B
-#end
+end
 
-#iter = 200
+#iter = 2
 #sigmas = [1,1.2,0.8]
 #taus = [50,100,200]
 #WE = 2
 #WSs = [2, 5, 10]
-#test = simfunc(iter, sigmas[3], taus[3], WE, WSs[3], tdists[1])
+#@time test = simfunc(iter, sigmas[2], taus[3], WE, WSs[3], tdists[1])
+#test[3]
+#Lambda(200,1.2)
 #sum(ismissing.(test[3][1,:]))
 #plot(x -> StatsBase.ecdf( collect(skipmissing(test[3][2,:])) )(x) , xlim=[0,1])
 #size(test[3])
@@ -102,7 +104,7 @@ tdists = [tdist1, tdist2]
 #histogram(test[3][4,:])
 
 function kicksim()
-iter = 200
+iter = 100
 sigmas = [1,1.2,0.8]
 taus = [50,100,200]
 WE = 2

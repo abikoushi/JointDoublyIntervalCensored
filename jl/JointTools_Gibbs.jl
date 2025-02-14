@@ -14,6 +14,11 @@ function prob_sample(x)
   return out
 end
 
+function freq_sample(x)
+  hs = [x[i] > 0.0 ? rand(Gamma(x[i],1)) : 0.0 for i in eachindex(x)]
+  return cumsum(hs)
+end
+
 prob2ccdf(x) = reverse(cumsum(reverse(x)))
 colmarginal(x) = cumsum(vec(sum(x,dims=2)))
 
@@ -65,11 +70,14 @@ function bsample(le_rank,re_rank,ls_rank,rs_rank,h,lam)
   end
   denb = sum(B)
   if denb > 0
-  b = rand(Geometric(rho[1]))
-  rind, cind, val = findnz(B)
-  val ./= denb
-  y = rand(Multinomial(b, val))
-  copy!(B, sparse(rind, cind, y, m, m))
+    b = 0
+    if zero(rho[1]) < rho[1] < one(rho[1])
+      b = rand(Geometric(rho[1]))
+    end
+    rind, cind, val = findnz(B)
+    val ./= denb
+    y = rand(Multinomial(b, val))
+    copy!(B, sparse(rind, cind, y, m, m))
   end
   return B
 end
@@ -133,9 +141,7 @@ function gibbssampler(LE, RE, LS, RS, Tmax, iter)
     ccdf[i,:] = prob2ccdf(h)
     sumB[i] = sum(B)
     bt[i,:] = colmarginal(B)
-    lam = cumsum(lam)
-    lam .*= (N + sumB[i])
-    intensity[i,:] = lam
+    intensity[i,:] = freq_sample(beta)
   end
   return (value = ti, ccdf = ccdf, intensity = intensity,  b = sumB, bt = bt, logprob = logprob)
 end
