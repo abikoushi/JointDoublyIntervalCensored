@@ -276,8 +276,8 @@ function empiricalcdf(p,v,x)
   return out
 end
 
-function simulated_pvalue(Rs, breaks,  pos, tvalue)
-  pv = zero(pos)
+function simulated_pvalue(Rs, breaks, pos, tvalue)
+  pv = Vector{Union{Missing, Float64}}(missing, length(pos))
   ps = collect(range(0, stop=1, length = size(Rs, 1)))
   for i in eachindex(pos)
     fi = breaks .< pos[i]

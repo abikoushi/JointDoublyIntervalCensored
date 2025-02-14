@@ -16,6 +16,7 @@ using JLD
 using SparseArrays
 using QuadGK
 using CSV
+using StatsBase
 include("./JointTools.jl")
 
 Lambda(t, shape) = t^shape
@@ -54,9 +55,9 @@ function simfunc(iter, sigma, tau, WE, WS, tdist)
     tvalue = prob*EN
     qs_intensity = [0.5, 0.8, 0.9, 0.95]*tau #4
     tvalue_intensity = qs_intensity .^ sigma
-    pv_inc_freq = zeros(4, iter)
-    pv_inc_prob = zeros(4, iter)
-    pv_intensity = zeros(4, iter)
+    pv_inc_freq = Matrix{Union{Missing, Float64}}(undef, 4, iter)
+    pv_inc_prob = Matrix{Union{Missing, Float64}}(undef, 4, iter)
+    pv_intensity = Matrix{Union{Missing, Float64}}(undef, 4, iter)
     pv_B = zeros(iter)
     prop = Vector{Any}(undef, iter)
     prop_em = Vector{Any}(undef, iter)
@@ -99,8 +100,10 @@ end
 #WE = 2
 #WSs = [2, 5, 10]
 #test = simfunc(iter, sigmas[3], taus[3], WE, WSs[3], tdists[1])
-
+#sum(ismissing.(test[3][1,:]))
+#plot(x -> StatsBase.ecdf( collect(skipmissing(test[3][2,:])) )(x) , xlim=[0,1])
 #size(test[3])
+
 #histogram(test[3][4,:])
 
 function kicksim()
@@ -111,10 +114,10 @@ WE = 2
 WSs = [2, 5, 10]
 #prop, prop_em, pv_inc_freq, pv_inc_prob, pv_intensity, pv_B = simfunc(5, sigmas[1], taus[1], WEs[1], WS, tdists[1])
 
-out_pv_incu_prob = zeros(length(tdists), length(sigmas), length(taus), length(WSs), 4, iter)
-out_pv_incu_freq = zeros(length(tdists), length(sigmas), length(taus), length(WSs), 4, iter)
-out_pv_intensity  = zeros(length(tdists), length(sigmas), length(taus), length(WSs), 4, iter) 
-out_pv_B = zeros(length(tdists), length(sigmas), length(taus), length(WSs), iter)
+out_pv_incu_prob = Array{Union{Missing, Float64}}(undef, length(tdists), length(sigmas), length(taus), length(WSs), 4, iter)
+out_pv_incu_freq = Array{Union{Missing, Float64}}(undef, length(tdists), length(sigmas), length(taus), length(WSs), 4, iter)
+out_pv_intensity  = Array{Union{Missing, Float64}}(undef, length(tdists), length(sigmas), length(taus), length(WSs), 4, iter) 
+out_pv_B = Array{Union{Missing, Float64}}(undef, length(tdists), length(sigmas), length(taus), length(WSs), iter)
 
 counter = 1
 len = length(tdists)*length(sigmas)*length(taus)*length(WSs)
