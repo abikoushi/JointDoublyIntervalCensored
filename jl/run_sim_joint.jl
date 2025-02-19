@@ -137,12 +137,12 @@ for i in eachindex(sigmas)
 end 
 end
 
-out_gibbs = vcat(out_vb...)
+out_gibbs = vcat(out_gibbs...)
 out_em = vcat(out_em...)
 
-CSV.write("outsim_trunc_gibbs.csv", out_vb)
+CSV.write("outsim_trunc_gibbs.csv", out_gibbs)
 CSV.write("outsim_trunc_em.csv", out_em)
-@save "outsim_pv_incubation_freq.jld" out_pv_incu_freq
+#@save "outsim_pv_incubation_freq.jld" out_pv_incu_freq
 @save "outsim_pv_incubation_prob.jld" out_pv_incu_prob
 @save "outsim_pv_intensity.jld" out_pv_intensity
 @save "outsim_pv_B.jld" out_pv_B
