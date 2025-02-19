@@ -1,4 +1,4 @@
 .DS_store
 jl/*.jld
 jl/*.csv
-
+jl/simdata

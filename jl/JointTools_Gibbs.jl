@@ -8,14 +8,15 @@ using SpecialFunctions
 using Statistics
 using SparseArrays
 
+
 function prob_sample(x)
-  out = [x[i] > 0.0 ? rand(Gamma(x[i],1)) : 0.0 for i in eachindex(x)]
+  out = [x[i] > 0.0 ? rand(Random.default_rng(), Gamma(x[i],1)) : 0.0 for i in eachindex(x)]
   out ./= sum(out)
   return out
 end
 
 function freq_sample(x)
-  hs = [x[i] > 0.0 ? rand(Gamma(x[i],1)) : 0.0 for i in eachindex(x)]
+  hs = [x[i] > 0.0 ? rand(Random.default_rng(), Gamma(x[i],1)) : 0.0 for i in eachindex(x)]
   return cumsum(hs)
 end
 
@@ -33,7 +34,7 @@ function asample(le_rank,re_rank,ls_rank,rs_rank,h,lam)
   end
   rind, cind, val = findnz(a)
   val ./= sum(val)
-  occ = rand(Categorical(val))
+  occ = rand(Random.default_rng(), Categorical(val))
   out = zero(a)
   out[rind[occ], cind[occ]] = 1.0
   return out
@@ -72,11 +73,11 @@ function bsample(le_rank,re_rank,ls_rank,rs_rank,h,lam)
   if denb > 0
     b = 0
     if zero(rho[1]) < rho[1] < one(rho[1])
-      b = rand(Geometric(rho[1]))
+      b = rand(Random.default_rng(), Geometric(rho[1]))
     end
     rind, cind, val = findnz(B)
     val ./= denb
-    y = rand(Multinomial(b, val))
+    y = rand(Random.default_rng(), Multinomial(b, val))
     copy!(B, sparse(rind, cind, y, m, m))
   end
   return B
@@ -86,7 +87,7 @@ function Bsample!(b,le_rank,re_rank,ls_rank,rs_rank,h,lam)
   m = size(h,1)
   B = zero(b)
   for i in eachindex(re_rank)
-    B .+= bsample(le_rank[i],re_rank[i],ls_rank[i],rs_rank[i],h,lam)
+    B .+= bsample(le_rank[i], re_rank[i], ls_rank[i], rs_rank[i], h, lam)
   end
   copy!(b, B)
 end
