@@ -2,3 +2,4 @@
 jl/*.jld
 jl/*.csv
 jl/simdata
+.Rproj.user
