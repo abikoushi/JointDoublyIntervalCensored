@@ -7,6 +7,7 @@ using LogExpFunctions
 using SpecialFunctions
 using Statistics
 using SparseArrays
+using StatsBase
 
 function expmeanlog(x)
   sumx = sum(x)
@@ -284,26 +285,16 @@ function simulated_pvalue(Rs, breaks, pos, tvalue)
     if any(fi)
     ind = findlast(fi)
     rs = Rs[:,ind]
-    sort!(rs)
-    fl = findlast(rs .< tvalue[i])
-    lower = isnothing(fl) ? 0.0 : ps[fl]
-    fu = findfirst(tvalue[i] .< reverse(rs))
-    upper = isnothing(fu) ? 0.0 : reverse(ps)[fu]
-    pv[i] = min(lower, upper)
+    lower = ecdf(rs)(tvalue[i])
+    pv[i] = min(lower, 1 - lower)
     end
   end
   return pv
 end
 
 function simulated_pvalue(Rs, tvalue)
-  #pv = zero(tvalue)
-  ps = collect(range(0, stop=1, length = length(Rs)))
-  sort!(Rs)
-  fl = findlast(Rs .< tvalue)
-  lower = isnothing(fl) ? 0.0 : ps[fl]
-  fu = findfirst(tvalue .< reverse(Rs))
-  upper = isnothing(fu) ? 0.0 : reverse(ps)[fu]
-  pv = min(lower, upper)
+  lower = ecdf(Rs)(tvalue)
+  pv = min(lower, 1-lower)
   return pv
 end
 
