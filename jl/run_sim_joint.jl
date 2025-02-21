@@ -128,13 +128,20 @@ end
 
 out_gibbs = vcat(out_gibbs...)
 out_em = vcat(out_em...)
+out_pv_ccdf = vcat(out_pv_ccdf...)
+out_pv_b = vcat(out_pv_b...)
+out_pv_int = vcat(out_pv_int...)
 
 CSV.write("outsim_trunc_gibbs.csv", out_gibbs)
 CSV.write("outsim_trunc_em.csv", out_em)
+
+CSV.write("outsim_trunc_pv_b.csv", out_pv_b)
+CSV.write("outsim_trunc_pv_ccdf.csv", out_pv_ccdf)
+CSV.write("outsim_trunc_pv_int.csv", out_pv_int)
 #@save "outsim_pv_incubation_freq.jld" out_pv_incu_freq
-@save "outsim_pv_incubation_prob.jld" out_pv_incu_prob
-@save "outsim_pv_intensity.jld" out_pv_intensity
-@save "outsim_pv_B.jld" out_pv_B
+#@save "outsim_pv_incubation_prob.jld" out_pv_incu_prob
+#@save "outsim_pv_intensity.jld" out_pv_intensity
+#@save "outsim_pv_B.jld" out_pv_B
 end
 
 @time kicksim()
