@@ -2,5 +2,6 @@
 jl/*.jld
 jl/*.csv
 jl/simdata
+*.pdf
 .Rproj.user
 .Rhistory
