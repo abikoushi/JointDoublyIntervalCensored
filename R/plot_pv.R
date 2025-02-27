@@ -3,7 +3,7 @@ library(ggplot2)
 library(dplyr)
 library(readr)
 
-path = "./jl/outsim_trunc_pv_b.csv"
+path = "./jl/simdata/outsim_trunc_pv_b.csv"
 out_pv_B <- read_csv(path)
 
 head(out_pv_B)
@@ -32,7 +32,7 @@ print(p)
 dev.off()
 ####
 #intensity
-path = "./jl/outsim_trunc_pv_int.csv"
+path = "./jl/simdata/outsim_trunc_pv_int.csv"
 out_pv_int <- read_csv(path)
 out_pv_int = rename(out_pv_int, quantile=pos)
 #head(out_pv_int)
@@ -68,7 +68,7 @@ for(i in 1:3){
 dev.off()
 ###
 #incubation
-path = "./jl/outsim_trunc_pv_ccdf.csv"
+path = "./jl/simdata/outsim_trunc_pv_ccdf.csv"
 out_pv_incubation <- read_csv(path)
 out_pv_incubation = rename(out_pv_incubation, quantile=pos)
 #dim(out_pv_int)

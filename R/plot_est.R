@@ -17,7 +17,7 @@ Lambda <- function(x,sigma){
   x^sigma
 }
 
-path = "./jl/outsim_trunc_gibbs.csv"
+path = "./jl/simdata/outsim_trunc_gibbs.csv"
 res_gibbs = read_csv(path)
 res_gibbs_s <- split(res_gibbs, res_gibbs$dist)
 
@@ -74,10 +74,10 @@ dev.off()
 
 ####
 #bias & se
-resEM = read_csv("./jl/outsim_trunc_em.csv")
+resEM = read_csv("./jl/simdata/outsim_trunc_em.csv")
 resEM_s <- split(resEM, resEM$dist)
 
-resVB = read_csv("./jl/outsim_trunc_vb.csv")
+resVB = read_csv("./jl/simdata/outsim_trunc_vb.csv")
 resVB_s <- split(resEM, resEM$dist)
 
 df1_gibbs <- group_by(res_gibbs_s[[1]], dist, sigma, tau, WS) %>% 
