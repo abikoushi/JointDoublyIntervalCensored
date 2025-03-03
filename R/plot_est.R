@@ -94,14 +94,14 @@ df1_em <- group_by(resEM_s[[1]], dist, sigma, tau, WS) %>%
   ungroup() %>% 
   mutate(method="MLE")
 
-df1_em <- group_by(resEM_s[[1]], dist, sigma, tau, WS) %>% 
+df1_vb <- group_by(resVB_s[[1]], dist, sigma, tau, WS) %>% 
   summarise(RMSE = sqrt(mean((ccdf-tccdf1(value))^2)),
             bias = mean(ccdf-tccdf1(value)),
             SE=sd(ccdf)) %>% 
   ungroup() %>% 
-  mutate(method="MLE")
+  mutate(method="VEAP")
 
-df1 = bind_rows(df1_gibbs, df1_em)
+df1 = bind_rows(df1_gibbs, df1_em, df1_vb)
 
 df2_gibbs <- group_by(res_gibbs_s[[2]], dist, sigma, tau, WS) %>% 
   summarise(RMSE = sqrt(mean((ccdf-tccdf2(value))^2)), 
@@ -117,7 +117,14 @@ df2_em <- group_by(resEM_s[[2]], dist, sigma, tau, WS) %>%
   ungroup() %>% 
   mutate(method="MLE")
 
-df2 = bind_rows(df2_gibbs, df2_em)
+df2_vb <- group_by(resVB_s[[2]], dist, sigma, tau, WS) %>% 
+  summarise(RMSE = sqrt(mean((ccdf-tccdf1(value))^2)),
+            bias = mean(ccdf-tccdf1(value)),
+            SE=sd(ccdf)) %>% 
+  ungroup() %>% 
+  mutate(method="VEAP")
+
+df2 = bind_rows(df2_gibbs, df2_em, df2_vb)
 
 df_int_gibbs <- group_by(res_gibbs, dist, sigma, tau, WS) %>% 
   summarise(RMSE = sqrt(mean((intensity-Lambda(value,sigma))^2)),
@@ -133,14 +140,21 @@ df_int_em <- group_by(resEM, dist, sigma, tau, WS) %>%
   ungroup() %>% 
   mutate(method="MLE", dist=gsub("Model","",dist))
 
-df_int = bind_rows(df_int_gibbs, df_int_em)
+df_int_vb <- group_by(resVB, dist, sigma, tau, WS) %>% 
+  summarise(RMSE = sqrt(mean((intensity-Lambda(value,sigma))^2)),
+            bias = mean(intensity-Lambda(value,sigma)),
+            SE=sd(intensity)) %>% 
+  ungroup() %>% 
+  mutate(method="VEAP", dist=gsub("Model","",dist))
+
+df_int = bind_rows(df_int_gibbs, df_int_em, df_int_vb)
 
 pdf("bias_and_se.pdf", width=10, height=12)
 p = ggplot(df2, aes(x=factor(WS), y=bias, colour=method, shape = method))+
   geom_pointrange(aes(ymin=bias-SE, ymax=bias+SE), position = position_dodge(width = 0.5))+
   geom_hline(yintercept = 0, linetype=3)+
   facet_grid(tau~sigma, labeller=label_both) +
-  scale_colour_grey()+scale_shape_manual(values = c(15:16))+
+  scale_colour_grey()+scale_shape_manual(values = c(15:17))+
   theme_classic(16) + 
   labs(title = "CCDF: mixture dist.", x="WS", y="bias and se")
 #ggsave("ccdf_bias_se_mixt.pdf")
@@ -150,7 +164,7 @@ p = ggplot(df1, aes(x=factor(WS), y=bias, colour=method, shape = method))+
   geom_pointrange(aes(ymin=bias-SE, ymax=bias+SE), position = position_dodge(width = 0.5))+
   geom_hline(yintercept = 0, linetype=3)+
   facet_grid(tau~sigma, labeller=label_both) +
-  scale_colour_grey()+scale_shape_manual(values = c(15:16))+
+  scale_colour_grey()+scale_shape_manual(values = c(15:17))+
   theme_classic(16) + 
   labs(title = "CCDF: log-normal dist.", x="WS", y="bias and se")
 #ggsave("ccdf_bias_se_lnorm.pdf")
@@ -160,7 +174,7 @@ p = ggplot(df_int, aes(x=factor(WS), y=bias, colour=method, shape = method))+
   geom_pointrange(aes(ymin=bias-SE, ymax=bias+SE), position = position_dodge(width = 0.5))+
   geom_hline(yintercept = 0, linetype=3)+
   facet_grid2(tau+sigma~dist, labeller=label_both, scales="free_y") +
-  scale_colour_grey()+scale_shape_manual(values = c(15:16))+
+  scale_colour_grey()+scale_shape_manual(values = c(15:17))+
   theme_classic(16) + theme(strip.text.y = element_text(angle=0))+
   labs(title = "Cumulative intensity", x="WS", y="bias and se")
 print(p)
