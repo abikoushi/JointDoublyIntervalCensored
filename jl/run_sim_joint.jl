@@ -14,7 +14,8 @@ using Profile
 using XLSX
 using JLD
 using SparseArrays
-using QuadGK
+# using QuadGK
+using HCubature
 using CSV
 
 include("./JointTools_Gibbs.jl")
@@ -23,17 +24,16 @@ include("./JointTools.jl")
 Lambda(t, shape) = t^shape
 lambda(t, shape) = shape * (t^(shape-1.0))
 
-function integrand(x, d, tau, WS, sigma)
-    Distributions.ccdf(d, tau-WS-x) * lambda(x, sigma)
+function integrand(X, d, tau, WS, sigma)
+    Distributions.ccdf(d, tau - X[1]*WS - X[2]) * lambda(X[2], sigma)
 end
 
 tdist1 = LogNormal(log(10) - 0.5, 1)
 tdist2 = MixtureModel([Weibull(2, 5/gamma(1+1/2)), Weibull(0.5, 10)], [2/3,1/3])
 tdists = [tdist1, tdist2]
 
-
 function simfunc(iter, sigma, tau, WE, WS, tdist)
-    trueB, _ = quadgk(x -> integrand(x, tdist, tau, WS, sigma), 0.0, tau)
+    trueB, _ = hcubature(x -> integrand(x, tdist, tau, WS, sigma), [0,0], [1,tau])
     prob = [0.5, 0.8, 0.9, 0.95] #4
     qs = quantile(tdist, prob)
     EN = tau ^ sigma #E[N]
@@ -137,9 +137,6 @@ end
 
 @time kicksim()
 
-#iter=100
-#61275/(60*60)
-#
 ###
 
 # tdist = LogNormal(log(10)-0.5, 1)

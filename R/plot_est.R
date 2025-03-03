@@ -17,12 +17,12 @@ Lambda <- function(x,sigma){
   x^sigma
 }
 
-path = "./jl/outsim_trunc_gibbs.csv"
+path = "./jl/simdata/outsim_trunc_gibbs.csv"
 res_gibbs = read_csv(path)
 res_gibbs_s <- split(res_gibbs, res_gibbs$dist)
 
 
-pdf("ccdf.pdf", width = 10, height=10)
+#pdf("ccdf.pdf", width = 10, height=10)
 p = ggplot(res_gibbs_s[[1]],aes(x=value, y=ccdf))+
   geom_step(aes(group=id), linewidth=0.1, alpha=0.1)+
   stat_function(fun=tccdf1, linetype=2, colour="royalblue", linewidth=1)+
@@ -30,7 +30,7 @@ p = ggplot(res_gibbs_s[[1]],aes(x=value, y=ccdf))+
   theme_classic(16) + labs(title = "log-normal")+
   theme(strip.text.y = element_text(angle = 0))
 print(p)
-#ggsave("ccdf_ln.pdf")
+ggsave("ccdf_ln.pdf", width = 10, height = 10)
 
 p = ggplot(res_gibbs_s[[2]],aes(x=value,y=ccdf))+
   geom_step(aes(group=id), linewidth=0.1, alpha=0.1)+
@@ -39,8 +39,9 @@ p = ggplot(res_gibbs_s[[2]],aes(x=value,y=ccdf))+
   theme_classic(16) + labs(title = "mixture")+
   theme(strip.text.y = element_text(angle = 0))
 print(p)
-dev.off()
-#ggsave("ccdf_mixt.pdf")
+ggsave("ccdf_mixture.pdf", width = 10, height = 10)
+
+#dev.off()
 
 sigmas = c(0.8, 1, 1.2)
 res_gibbs_s_1 <- split(res_gibbs_s[[1]], res_gibbs_s[[1]]$sigma)
@@ -48,7 +49,7 @@ res_gibbs_s_2 <- split(res_gibbs_s[[2]], res_gibbs_s[[2]]$sigma)
 
 ####
 #intensity
-pdf("intensity.pdf")
+#pdf("intensity.pdf")
 for(i in 1:3){
   p = ggplot(res_gibbs_s_1[[i]], aes(x=value, y=intensity))+
   geom_step(aes(group=id), linewidth=0.1, alpha=0.1)+
@@ -56,9 +57,10 @@ for(i in 1:3){
   facet_grid2(tau~WS, scales="free", labeller = label_both, independent = "x")+
   theme_classic(16) + labs(title = paste0("sigma = ",sigmas[i],"; log-normal"),x="time", y="cumulative intensity")+
   theme(strip.text.y = element_text(angle = 0))
-  print(p)
+  #print(p)
+  ggsave(filename = paste0("cumint_ln_sigma",sigmas[i],".pdf"), plot = p)
 }
-#ggsave(paste0("cumint_ln_sigma",sigmas[i],".pdf"))
+
 
 for(i in 1:3){
   p <- ggplot(res_gibbs_s_2[[i]], aes(x=value, y=intensity))+
@@ -67,17 +69,18 @@ for(i in 1:3){
     facet_grid2(tau~WS, scales="free", labeller = label_both, independent = "x")+
     theme_classic(16) + labs(title = paste0("sigma = ",sigmas[i],"; mixture"),x="time", y="cumulative intensity")+
     theme(strip.text.y = element_text(angle = 0))  
-  print(p)
+  #print(p)
+  ggsave(paste0("cumint_mix_sigma",sigmas[i],".pdf"), plot = p)
 }
-dev.off()
+#dev.off()
 #ggsave("cumint_mixt.pdf")
 
 ####
 #bias & se
-resEM = read_csv("./jl/outsim_trunc_em.csv")
+resEM = read_csv("./jl/simdata/outsim_trunc_em.csv")
 resEM_s <- split(resEM, resEM$dist)
 
-resVB = read_csv("./jl/outsim_trunc_vb.csv")
+resVB = read_csv("./jl/simdata/outsim_trunc_vb.csv")
 resVB_s <- split(resEM, resEM$dist)
 
 df1_gibbs <- group_by(res_gibbs_s[[1]], dist, sigma, tau, WS) %>% 
@@ -118,11 +121,11 @@ df2_em <- group_by(resEM_s[[2]], dist, sigma, tau, WS) %>%
   mutate(method="MLE")
 
 df2_vb <- group_by(resVB_s[[2]], dist, sigma, tau, WS) %>% 
-  summarise(RMSE = sqrt(mean((ccdf-tccdf1(value))^2)),
-            bias = mean(ccdf-tccdf1(value)),
+  summarise(RMSE = sqrt(mean((ccdf-tccdf2(value))^2)),
+            bias = mean(ccdf-tccdf2(value)),
             SE=sd(ccdf)) %>% 
   ungroup() %>% 
-  mutate(method="VEAP")
+  mutate(method="VB")
 
 df2 = bind_rows(df2_gibbs, df2_em, df2_vb)
 
@@ -149,7 +152,9 @@ df_int_vb <- group_by(resVB, dist, sigma, tau, WS) %>%
 
 df_int = bind_rows(df_int_gibbs, df_int_em, df_int_vb)
 
-pdf("bias_and_se.pdf", width=10, height=12)
+df_int = bind_rows(df_int_gibbs, df_int_em, df_int_vb)
+
+#pdf("bias_and_se.pdf", width=10, height=12)
 p = ggplot(df2, aes(x=factor(WS), y=bias, colour=method, shape = method))+
   geom_pointrange(aes(ymin=bias-SE, ymax=bias+SE), position = position_dodge(width = 0.5))+
   geom_hline(yintercept = 0, linetype=3)+
@@ -157,7 +162,7 @@ p = ggplot(df2, aes(x=factor(WS), y=bias, colour=method, shape = method))+
   scale_colour_grey()+scale_shape_manual(values = c(15:17))+
   theme_classic(16) + 
   labs(title = "CCDF: mixture dist.", x="WS", y="bias and se")
-#ggsave("ccdf_bias_se_mixt.pdf")
+ggsave("ccdf_bias_se_mixt.pdf", plot = p)
 print(p)
 
 p = ggplot(df1, aes(x=factor(WS), y=bias, colour=method, shape = method))+
@@ -167,7 +172,7 @@ p = ggplot(df1, aes(x=factor(WS), y=bias, colour=method, shape = method))+
   scale_colour_grey()+scale_shape_manual(values = c(15:17))+
   theme_classic(16) + 
   labs(title = "CCDF: log-normal dist.", x="WS", y="bias and se")
-#ggsave("ccdf_bias_se_lnorm.pdf")
+ggsave("ccdf_bias_se_lnorm.pdf", plot = p)
 print(p)
 
 p = ggplot(df_int, aes(x=factor(WS), y=bias, colour=method, shape = method))+
@@ -178,5 +183,5 @@ p = ggplot(df_int, aes(x=factor(WS), y=bias, colour=method, shape = method))+
   theme_classic(16) + theme(strip.text.y = element_text(angle=0))+
   labs(title = "Cumulative intensity", x="WS", y="bias and se")
 print(p)
-#ggsave("intensity_bias_se.pdf")
-dev.off()
+ggsave("intensity_bias_se.pdf", plot = p, width = 12, height = 10)
+#dev.off()

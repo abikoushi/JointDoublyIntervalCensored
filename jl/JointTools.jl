@@ -302,4 +302,8 @@ function randfreqn(α, n)
   return mapreduce(permutedims, vcat, [randfreq(α) for _ in 1:n])  
 end
 
+function takeCI(Rs, probs)
+  mapreduce(permutedims, vcat,[quantile(Rs[:,i], probs) for i in axes(Rs, 2)])  
+end
+
 end
