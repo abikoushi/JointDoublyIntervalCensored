@@ -2,7 +2,6 @@
 Section 3 "Simulation Study"
 Fig 3 - 6 
 =#
-
 using Random
 using LinearAlgebra
 using Distributions
@@ -32,6 +31,11 @@ end
 tdist1 = LogNormal(log(10) - 0.5, 1)
 tdist2 = MixtureModel([Weibull(2, 5/gamma(1+1/2)), Weibull(0.5, 10)], [2/3,1/3])
 tdists = [tdist1, tdist2]
+
+#quantile(tdist1, [0.5, 0.8, 0.9, 0.95])
+#round.(quantile(tdist1, [0.5, 0.8, 0.9, 0.95]), digits=1)
+#quantile(tdist2, [0.5, 0.8, 0.9, 0.95])
+#round.(quantile(tdist2, [0.5, 0.8, 0.9, 0.95]), digits=1)
 
 function simfunc(iter, sigma, tau, WE, WS, tdist)
     trueB, _ = hcubature(x -> integrand(x, tdist, tau, WS, sigma), [0,0], [1,tau])
