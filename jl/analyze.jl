@@ -1,3 +1,8 @@
+#=
+Section 3 "Simulation Study"
+Fig 4 - 5 
+=#
+
 using LinearAlgebra
 using DataFrames
 using CSV

@@ -1,7 +1,8 @@
 #=
 Section 3 "Simulation Study"
-Fig 3 - 5 
+Fig 3 - 6 
 =#
+
 using Random
 using LinearAlgebra
 using Distributions
@@ -136,6 +137,8 @@ CSV.write("outsim_trunc_pv_int.csv", out_pv_int)
 end
 
 @time kicksim()
+
+#153947.154873 sec
 
 ###
 
