@@ -1,6 +1,6 @@
 #=
-Section 3 "Simulation Study"
-Fig 4 - 5 
+Section 4 "Case Study"
+Fig 6
 =#
 
 using LinearAlgebra
@@ -18,21 +18,19 @@ include("./JointTools.jl")
 include("./JointTools_Gibbs.jl")
 dat = CSV.read("./data/covid19/dat_t.csv", DataFrame)
 
-
-
 Random.seed!(1234)
 res_gibbs = jointest.gibbssampler(dat.EL, dat.ER, dat.SL, dat.SR, maximum(dat.SR), 4000)
 
 p = plot(2001:4000, res_gibbs.logprob[2001:4000], tickdirection=:out, legend=false, color="grey")
 xlabel!(p, "step")
 ylabel!(p, "log-probability")
-savefig(p, "traceplot.pdf")
+#savefig(p, "traceplot.pdf")
 
 
 Shat = vec(mean(res_gibbs.ccdf[2001:end,:], dims=1))
 CI_s = jointtool.takeCI(res_gibbs.ccdf[2001:end,:], [0.025, 0.975])
-plot(res_gibbs.value, Shat)
 
+plot(res_gibbs.value, Shat)
 
 df = DataFrame(value=res_gibbs.value, ccdf=Shat, lower = CI_s[:,1], upper = CI_s[:,2])
 
@@ -41,7 +39,7 @@ library(coarseDataTools)
 library(dplyr)
 
 dic_type <- c(2,1,1,0)
-dat_t2 <- mutate($dat_t, type=dic_type[ctype+1L]) %>% 
+dat_t2 <- mutate($dat, type=dic_type[ctype+1L]) %>% 
   mutate(EL = ifelse(type==0,0,EL)) %>% 
   as.data.frame()
 
@@ -57,8 +55,10 @@ R"
 library(ggplot2)
 library(pammtools)
 ggplot($df, aes(x=value))+
-  geom_stepribbon(aes(ymin=lower, ymax=upper), alpha=0.1)+
+  #geom_step(data = $df_inf, aes(y=ccdf), colour='darkgrey', linetype=1)+
+  #geom_point(data = $df_inf, aes(y=ccdf), colour='darkgrey', shape=3, size=1.5)+
   geom_step(aes(y=ccdf))+
+  geom_stepribbon(aes(ymin=lower, ymax=upper), alpha=0.1)+
   stat_function(fun=pgamma, args = list(shape=exp(covid_opt_g$par[1]), scale=exp(covid_opt_g$par[2]), lower.tail=FALSE),
                 aes(linetype='gamma', colour='gamma'))+
   stat_function(fun=pgamma, args = list(shape=exp(covid_opt_g$par[1]), scale=exp(covid_opt_g$par[2]), lower.tail=FALSE),
@@ -84,13 +84,16 @@ CI_lambda = jointtool.takeCI(res_gibbs.intensity[2001:end,:], [0.025, 0.975])
 bhat = vec(mean(res_gibbs.bt[2001:end,:], dims=1))
 CI_b = jointtool.takeCI(res_gibbs.bt[2001:end,:], [0.025, 0.975])
 
-df = DataFrame(date = Dates.Day.(res_gibbs.value) .+ dat_t.recmin[1], EAP = Lhat,lower = CI_lambda[:,1], upper = CI_lambda[:,2], bt=bhat, lower_b=CI_b[:,1], upper_b = CI_b[:,2])
+df = DataFrame(date = Dates.Day.(res_gibbs.value) .+ dat.recmin[1], EAP = Lhat,lower = CI_lambda[:,1], upper = CI_lambda[:,2], bt=bhat, lower_b=CI_b[:,1], upper_b = CI_b[:,2])
+
 
 R"
 library(ggplot2)
 library(pammtools)
 ggplot($df, aes(x=date))+
   geom_stepribbon(aes(ymin=lower, ymax=upper), alpha=0.1)+
+  geom_step(data = $df_inf, aes(y=EAP), linetype=2, colour='darkgrey') +
+  #geom_point(data = $df_inf, aes(y=EAP), shape=3, colour='darkgrey') +
   geom_step(aes(y=EAP))+
   geom_stepribbon(aes(ymin=lower_b, ymax=upper_b, fill='truncated'), alpha=0.1)+
   geom_step(aes(y=bt, colour='truncated'), linetype=2)+

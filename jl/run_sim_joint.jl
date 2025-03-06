@@ -1,6 +1,6 @@
 #=
 Section 3 "Simulation Study"
-Fig 3 - 6 
+Fig 3 - 5
 =#
 using Random
 using LinearAlgebra
