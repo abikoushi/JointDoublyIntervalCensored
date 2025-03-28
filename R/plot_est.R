@@ -80,28 +80,28 @@ resEM = read_csv("./jl/simdata/outsim_trunc_em.csv")
 resEM_s <- split(resEM, resEM$dist)
 
 resVB = read_csv("./jl/simdata/outsim_trunc_vb.csv")
-resVB_s <- split(resEM, resEM$dist)
+resVB_s <- split(resVB, resVB$dist)
 
 df1_gibbs <- group_by(res_gibbs_s[[1]], dist, sigma, tau, WS) %>% 
   summarise(RMSE = sqrt(mean((ccdf-tccdf1(value))^2)),
             bias = mean(ccdf-tccdf1(value)),
             SE=sd(ccdf)) %>% 
   ungroup() %>% 
-  mutate(method="EAP")
+  mutate(method="Gibbs")
 
 df1_em <- group_by(resEM_s[[1]], dist, sigma, tau, WS) %>% 
   summarise(RMSE = sqrt(mean((ccdf-tccdf1(value))^2)),
             bias = mean(ccdf-tccdf1(value)),
             SE=sd(ccdf)) %>% 
   ungroup() %>% 
-  mutate(method="MLE")
+  mutate(method="EM")
 
 df1_vb <- group_by(resVB_s[[1]], dist, sigma, tau, WS) %>% 
   summarise(RMSE = sqrt(mean((ccdf-tccdf1(value))^2)),
             bias = mean(ccdf-tccdf1(value)),
             SE=sd(ccdf)) %>% 
   ungroup() %>% 
-  mutate(method="VEAP")
+  mutate(method="VB")
 
 df1 = bind_rows(df1_gibbs, df1_em, df1_vb)
 
@@ -110,14 +110,14 @@ df2_gibbs <- group_by(res_gibbs_s[[2]], dist, sigma, tau, WS) %>%
             bias = mean(ccdf-tccdf2(value)),
             SE=sd(ccdf)) %>% 
   ungroup() %>% 
-  mutate(method="EAP")
+  mutate(method="Gibbs")
 
 df2_em <- group_by(resEM_s[[2]], dist, sigma, tau, WS) %>% 
   summarise(RMSE = sqrt(mean((ccdf-tccdf2(value))^2)),
             bias = mean(ccdf-tccdf2(value)),
             SE=sd(ccdf)) %>% 
   ungroup() %>% 
-  mutate(method="MLE")
+  mutate(method="EM")
 
 df2_vb <- group_by(resVB_s[[2]], dist, sigma, tau, WS) %>% 
   summarise(RMSE = sqrt(mean((ccdf-tccdf2(value))^2)),
@@ -133,27 +133,25 @@ df_int_gibbs <- group_by(res_gibbs, dist, sigma, tau, WS) %>%
             bias = mean(intensity-Lambda(value,sigma)),
             SE = sd(intensity)) %>% 
   ungroup() %>% 
-  mutate(method="EAP", dist=gsub("Model","",dist))
+  mutate(method="Gibbs", dist=gsub("Model","",dist))
 
 df_int_em <- group_by(resEM, dist, sigma, tau, WS) %>% 
   summarise(RMSE = sqrt(mean((intensity-Lambda(value,sigma))^2)),
             bias = mean(intensity-Lambda(value,sigma)),
             SE=sd(intensity)) %>% 
   ungroup() %>% 
-  mutate(method="MLE", dist=gsub("Model","",dist))
+  mutate(method="EM", dist=gsub("Model","",dist))
 
 df_int_vb <- group_by(resVB, dist, sigma, tau, WS) %>% 
   summarise(RMSE = sqrt(mean((intensity-Lambda(value,sigma))^2)),
             bias = mean(intensity-Lambda(value,sigma)),
             SE=sd(intensity)) %>% 
   ungroup() %>% 
-  mutate(method="VEAP", dist=gsub("Model","",dist))
+  mutate(method="VB", dist=gsub("Model","",dist))
 
 df_int = bind_rows(df_int_gibbs, df_int_em, df_int_vb)
 
-df_int = bind_rows(df_int_gibbs, df_int_em, df_int_vb)
 
-#pdf("bias_and_se.pdf", width=10, height=12)
 p = ggplot(df2, aes(x=factor(WS), y=bias, colour=method, shape = method))+
   geom_pointrange(aes(ymin=bias-SE, ymax=bias+SE), position = position_dodge(width = 0.5))+
   geom_hline(yintercept = 0, linetype=3)+
@@ -161,8 +159,9 @@ p = ggplot(df2, aes(x=factor(WS), y=bias, colour=method, shape = method))+
   scale_colour_grey()+scale_shape_manual(values = c(15:17))+
   theme_classic(16) + 
   labs(title = "CCDF: mixture dist.", x="WS", y="bias and se")
-ggsave("ccdf_bias_se_mixt.pdf", plot = p)
 print(p)
+ggsave("ccdf_bias_se_mixt.pdf", plot = p)
+
 
 p = ggplot(df1, aes(x=factor(WS), y=bias, colour=method, shape = method))+
   geom_pointrange(aes(ymin=bias-SE, ymax=bias+SE), position = position_dodge(width = 0.5))+
@@ -171,8 +170,8 @@ p = ggplot(df1, aes(x=factor(WS), y=bias, colour=method, shape = method))+
   scale_colour_grey()+scale_shape_manual(values = c(15:17))+
   theme_classic(16) + 
   labs(title = "CCDF: log-normal dist.", x="WS", y="bias and se")
-ggsave("ccdf_bias_se_lnorm.pdf", plot = p)
 print(p)
+ggsave("ccdf_bias_se_lnorm.pdf", plot = p)
 
 p = ggplot(df_int, aes(x=factor(WS), y=bias, colour=method, shape = method))+
   geom_pointrange(aes(ymin=bias-SE, ymax=bias+SE), position = position_dodge(width = 0.5))+
