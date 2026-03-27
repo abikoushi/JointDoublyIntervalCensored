@@ -51,7 +51,7 @@ function makeDIC(rng::AbstractRNG, dt::UnivariateDistribution, tau, WE, WS, shap
       RS[i] = S + WS * us
       RE[i] = min(RS[i], at + WE * ue)
       z = rand(rng) #next infection
-      at =  ( (-log(z))^(1/shape) + at^shape)^(1/shape)
+      at =  ( (-log(z)) + at^shape)^(1/shape)
       if at >= tau
         LE=LE[1:i]
         LS=LS[1:i]

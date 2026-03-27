@@ -2,7 +2,7 @@
 
 An implementation of
 
-Abe & Sakumura (2025) "Empirical Joint Estimation for Infection and Incubation Period under the Doubly Interval-Censored with Right Truncated Observation." (in preparation)
+Abe & Sakumura (2026) "Empirical Joint Estimation for Infection and Incubation Period under the Doubly Interval-Censored with Right Truncated Observation." Journal of Computational and Graphical Statistics (in press)
 
 ## Structure of this repository
 
