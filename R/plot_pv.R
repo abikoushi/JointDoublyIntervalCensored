@@ -17,7 +17,7 @@ df_int2 = dplyr::filter(out_pv_int, dist=="MixtureModel")
 df_int_1_s = split(df_int1, df_int1$WS)
 df_int_2_s = split(df_int2, df_int2$WS)
 
-pdf("pvalue_intensity.pdf", width=10, height=10)
+#pdf("pvalue_intensity.pdf", width=10, height=10)
 for(i in 1:3){
 p_i <- ggplot(df_int_1_s[[i]], aes(x=pv))+
   stat_ecdf()+
