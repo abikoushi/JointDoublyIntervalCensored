@@ -5,3 +5,4 @@ jl/simdata
 *.pdf
 .Rproj.user
 .Rhistory
+*.tiff

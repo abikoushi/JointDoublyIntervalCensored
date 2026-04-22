@@ -2,6 +2,7 @@ library(readr)
 library(dplyr)
 library(ggplot2)
 library(ggh4x)
+library(patchwork)
 #LogNormal <- list(meanlog=log(10)-0.5, sdlog=1, lower.tail=FALSE)
 tccdf1 = function(x){
   plnorm(x, log(10)-0.5, 1, lower.tail = FALSE)
@@ -152,26 +153,29 @@ df_int_vb <- group_by(resVB, dist, sigma, tau, WS) %>%
 df_int = bind_rows(df_int_gibbs, df_int_em, df_int_vb)
 
 
-p = ggplot(df2, aes(x=factor(WS), y=bias, colour=method, shape = method))+
+p1 = ggplot(df2, aes(x=factor(WS), y=bias, colour=method, shape = method))+
   geom_pointrange(aes(ymin=bias-SE, ymax=bias+SE), position = position_dodge(width = 0.5))+
   geom_hline(yintercept = 0, linetype=3)+
   facet_grid(tau~sigma, labeller=label_both) +
   scale_colour_grey()+scale_shape_manual(values = c(15:17))+
   theme_classic(16) + 
   labs(title = "CCDF: mixture dist.", x="WS", y="bias and se")
-print(p)
-ggsave("ccdf_bias_se_mixt.pdf", plot = p)
+print(p1)
 
 
-p = ggplot(df1, aes(x=factor(WS), y=bias, colour=method, shape = method))+
+
+p2 = ggplot(df1, aes(x=factor(WS), y=bias, colour=method, shape = method))+
   geom_pointrange(aes(ymin=bias-SE, ymax=bias+SE), position = position_dodge(width = 0.5))+
   geom_hline(yintercept = 0, linetype=3)+
   facet_grid(tau~sigma, labeller=label_both) +
   scale_colour_grey()+scale_shape_manual(values = c(15:17))+
   theme_classic(16) + 
   labs(title = "CCDF: log-normal dist.", x="WS", y="bias and se")
-print(p)
-ggsave("ccdf_bias_se_lnorm.pdf", plot = p)
+print(p2)
+
+p <- p1+p2
+ggsave("ccdf_bias_se.tiff", plot = p, width = 14.5, height=7.29)
+
 
 p = ggplot(df_int, aes(x=factor(WS), y=bias, colour=method, shape = method))+
   geom_pointrange(aes(ymin=bias-SE, ymax=bias+SE), position = position_dodge(width = 0.5))+
@@ -181,5 +185,5 @@ p = ggplot(df_int, aes(x=factor(WS), y=bias, colour=method, shape = method))+
   theme_classic(16) + theme(strip.text.y = element_text(angle=0))+
   labs(title = "Cumulative intensity", x="WS", y="bias and se")
 print(p)
-ggsave("intensity_bias_se.pdf", plot = p, width = 12, height = 10)
+ggsave("intensity_bias_se.tiff", plot = p, width = 12, height = 10)
 #dev.off()

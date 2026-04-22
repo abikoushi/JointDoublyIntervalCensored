@@ -277,13 +277,29 @@ function empiricalcdf(p,v,x)
   return out
 end
 
-function simulated_pvalue(Rs, breaks, pos, tvalue)
+function simulated_pvalue1(Rs, breaks, pos, tvalue)
   pv = Vector{Union{Missing, Float64}}(missing, length(pos))
-  #ps = collect(range(0, stop=1, length = size(Rs, 1)))
-  for i in eachindex(pos)
+   for i in eachindex(pos)
     fi = breaks .< pos[i]
     if any(fi)
     ind = findlast(fi)
+    rs = Rs[:,ind]
+    lower = ecdf(rs)(tvalue[i])
+    pv[i] = 2*min(lower, 1 - lower)
+    end
+  end
+  return pv
+end
+
+function simulated_pvalue2(Rs, breaks, pos, tvalue)
+  pv = Vector{Union{Missing, Float64}}(missing, length(pos))
+  #ps = collect(range(0, stop=1, length = size(Rs, 1)))
+  for i in eachindex(pos)
+    #fi = breaks .< pos[i]
+    fi = breaks .> pos[i]
+    if any(fi)
+    #ind = findlast(fi)
+    ind = findfirst(fi)
     rs = Rs[:,ind]
     lower = ecdf(rs)(tvalue[i])
     pv[i] = 2*min(lower, 1 - lower)

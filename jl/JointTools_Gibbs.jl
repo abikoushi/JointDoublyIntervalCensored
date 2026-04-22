@@ -20,7 +20,9 @@ function freq_sample(x)
   return cumsum(hs)
 end
 
+#prob2ccdf(x) = 1 .- cumsum(x)
 prob2ccdf(x) = reverse(cumsum(reverse(x)))
+
 colmarginal(x) = cumsum(vec(sum(x,dims=2)))
 
 function asample(le_rank,re_rank,ls_rank,rs_rank,h,lam)
